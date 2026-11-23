@@ -1,0 +1,28 @@
+name: Android emulator capability smoke
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Boot API 30 emulator and inspect capabilities
+        uses: ReactiveCircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          script: |
+            set -euo pipefail
+            adb wait-for-device
+            echo "SDK=$(adb shell getprop ro.build.version.sdk | tr -d '\r')"
+            echo "ABI_LIST=$(adb shell getprop ro.product.cpu.abilist | tr -d '\r')"
+            adb shell pm list features | grep -E 'camera|location' || true
