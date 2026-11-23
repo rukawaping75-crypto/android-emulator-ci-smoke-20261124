@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Web capability check</title>
+<h1>Web capability check</h1>
+<p id="origin"></p>
+<button id="location">Request location</button>
+<button id="camera">Request camera</button>
+<pre id="result" aria-live="polite">Ready</pre>
+<video id="preview" autoplay playsinline muted width="240" height="180"></video>
+<script>
+const result = document.getElementById('result');
+const write = message => { result.textContent += '\n' + message; };
+document.getElementById('origin').textContent = 'Origin: ' + location.origin;
+document.getElementById('location').onclick = () => {
+  navigator.geolocation.getCurrentPosition(
+    pos => write('Location: available; accuracy=' + Math.round(pos.coords.accuracy)),
+    err => write('Location: denied or unavailable; code=' + err.code),
+    {enableHighAccuracy: false, timeout: 10000, maximumAge: 0}
+  );
+};
+document.getElementById('camera').onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
+    document.getElementById('preview').srcObject = stream;
+    write('Camera: available; tracks=' + stream.getVideoTracks().length);
+    setTimeout(() => stream.getTracks().forEach(track => track.stop()), 5000);
+  } catch (error) {
+    write('Camera: denied or unavailable; name=' + error.name);
+  }
+};
+</script>
+</html>
