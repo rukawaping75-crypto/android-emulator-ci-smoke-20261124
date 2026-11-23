@@ -21,7 +21,7 @@ jobs:
           arch: x86_64
           profile: pixel_4
           script: |
-            set -euo pipefail
+            set -eu
             adb wait-for-device
             echo "SDK=$(adb shell getprop ro.build.version.sdk | tr -d '\r')"
             echo "ABI_LIST=$(adb shell getprop ro.product.cpu.abilist | tr -d '\r')"
