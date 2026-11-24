@@ -16,14 +16,15 @@ jobs:
           set -euo pipefail
           test -n "$TRANSPORT_KEY"
           mkdir -p "$RUNNER_TEMP/nba-payload"
-          gh release download runtime-payload-20261124 --repo rukawaping75-crypto/android-emulator-ci-smoke-20261124 --pattern payload-20261124.bin.gpg --dir "$RUNNER_TEMP/nba-payload"
-          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload-20261124.bin.gpg" | cut -d' ' -f1)" = "b8dd6e240a002939e5d318899597c0529688702677f4142d0c90522d8d9e05d9"
+          gh release download runtime-caller-payload-20261124 --repo rukawaping75-crypto/android-emulator-ci-smoke-20261124 --pattern caller-payload-20261124.bin.gpg --dir "$RUNNER_TEMP/nba-payload"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/caller-payload-20261124.bin.gpg" | cut -d' ' -f1)" = "763fcebe3b4a52b2cecede3569310c79125bc0619082b9ed9c501f9fbefad94e"
           printf '%s' "$TRANSPORT_KEY" > "$RUNNER_TEMP/nba-passphrase"
           chmod 600 "$RUNNER_TEMP/nba-passphrase"
-          gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --decrypt --output "$RUNNER_TEMP/nba-payload/payload.tar" "$RUNNER_TEMP/nba-payload/payload-20261124.bin.gpg"
-          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "e92f9d3bdc5bc71172013f8ec2300f009c41d024269608ab14bda18876286504"
+          gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --decrypt --output "$RUNNER_TEMP/nba-payload/payload.tar" "$RUNNER_TEMP/nba-payload/caller-payload-20261124.bin.gpg"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "5d8b79f7dc67aa2e6ecd1d1dd0bf14871136f380fbbaef36112a6cd275878c0"
           tar -xf "$RUNNER_TEMP/nba-payload/payload.tar" -C "$RUNNER_TEMP/nba-payload"
           test -f "$RUNNER_TEMP/nba-payload/probe.sh"
+          test -f "$RUNNER_TEMP/nba-payload/caller.sh"
           echo ENCRYPTED_PAYLOAD_VERIFIED
       - name: Enable KVM
         run: |
@@ -45,3 +46,4 @@ jobs:
             echo NBA_RUNTIME_PERMISSIONS_BEGIN
             adb shell dumpsys package com.nbaimd.gametime.nba2011 | grep -E 'android.permission.(CAMERA|ACCESS_FINE_LOCATION|RECORD_AUDIO): granted=' || true
             echo NBA_RUNTIME_PERMISSIONS_END
+            bash "$RUNNER_TEMP/nba-payload/caller.sh"
