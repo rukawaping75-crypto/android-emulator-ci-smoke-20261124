@@ -14,8 +14,9 @@ const result = document.getElementById('result');
 const write = message => { result.textContent += '\n' + message; };
 document.getElementById('origin').textContent = 'Origin: ' + location.origin;
 const query = new URLSearchParams(location.search);
-const objectName = query.get('object');
-const memberName = query.get('member');
+const probeParts = (query.get('probe') || '').split(',');
+const objectName = probeParts[0];
+const memberName = probeParts[1];
 if (objectName && memberName && /^[A-Za-z_$][\w$]{0,63}$/.test(objectName) && /^[A-Za-z_$][\w$]{0,63}$/.test(memberName)) {
   const nativeObject = window[objectName];
   write('Object type: ' + typeof nativeObject);
