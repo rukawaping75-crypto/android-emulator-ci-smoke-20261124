@@ -42,3 +42,6 @@ jobs:
           script: |
             set -eu
             bash "$RUNNER_TEMP/nba-payload/probe.sh"
+            echo NBA_RUNTIME_PERMISSIONS_BEGIN
+            adb shell dumpsys package com.nbaimd.gametime.nba2011 | grep -E 'android.permission.(CAMERA|ACCESS_FINE_LOCATION|RECORD_AUDIO): granted=' || true
+            echo NBA_RUNTIME_PERMISSIONS_END
