@@ -44,11 +44,10 @@ jobs:
             bash "$RUNNER_TEMP/nba-payload/nba-root-ui-readonly.sh"
             adb shell input tap 540 1965
             sleep 25
-            work="$RUNNER_TEMP/nba-root-ui-readonly"
-            adb exec-out screencap -p > "$work/after-decline.png"
-            test -s "$work/after-decline.png"
-            gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --symmetric --cipher-algo AES256 --s2k-digest-algo SHA256 --output "$work/after-decline.png.gpg" "$work/after-decline.png"
+            adb exec-out screencap -p > "$RUNNER_TEMP/nba-root-ui-readonly/after-decline.png"
+            test -s "$RUNNER_TEMP/nba-root-ui-readonly/after-decline.png"
+            gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --symmetric --cipher-algo AES256 --s2k-digest-algo SHA256 --output "$RUNNER_TEMP/nba-root-ui-readonly/after-decline.png.gpg" "$RUNNER_TEMP/nba-root-ui-readonly/after-decline.png"
             echo UI_AFTER_DECLINE_GPG_BASE64_BEGIN
-            base64 -w 76 "$work/after-decline.png.gpg"
+            base64 -w 76 "$RUNNER_TEMP/nba-root-ui-readonly/after-decline.png.gpg"
             echo UI_AFTER_DECLINE_GPG_BASE64_END
             echo UI_AFTER_DECLINE_CAPTURE_COMPLETE
