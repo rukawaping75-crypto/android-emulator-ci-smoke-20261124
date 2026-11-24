@@ -1,0 +1,42 @@
+name: Android bridge read-only check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Download and verify encrypted payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRANSPORT_KEY: ${{ secrets.NBA_RUNTIME_TRANSPORT_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$TRANSPORT_KEY"
+          mkdir -p "$RUNNER_TEMP/nba-payload"
+          gh release download runtime-readonly-probe-20261124 --repo rukawaping75-crypto/android-emulator-ci-smoke-20261124 --pattern bridge-probe-20261124.bin.gpg --dir "$RUNNER_TEMP/nba-payload"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/bridge-probe-20261124.bin.gpg" | cut -d' ' -f1)" = "79f6f55007986764719ef8b9b92735681f60e13e13207aead413f45320357fb9"
+          printf '%s' "$TRANSPORT_KEY" > "$RUNNER_TEMP/nba-passphrase"
+          chmod 600 "$RUNNER_TEMP/nba-passphrase"
+          gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --decrypt --output "$RUNNER_TEMP/nba-payload/payload.tar" "$RUNNER_TEMP/nba-payload/bridge-probe-20261124.bin.gpg"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "62511fb24cf20cbff8c7077af7bd4abf23e72e6ec166f89acc4d39ac1cf59567"
+          tar -xf "$RUNNER_TEMP/nba-payload/payload.tar" -C "$RUNNER_TEMP/nba-payload"
+          test -f "$RUNNER_TEMP/nba-payload/bridge-probe.sh"
+          echo BRIDGE_PAYLOAD_VERIFIED
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Boot emulator and run bounded read-only check
+        env:
+          NBA_TRANSPORT_PASS_FILE: ${{ runner.temp }}/nba-passphrase
+        uses: ReactiveCircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          script: bash "$RUNNER_TEMP/nba-payload/bridge-probe.sh"
