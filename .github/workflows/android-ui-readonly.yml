@@ -1,0 +1,42 @@
+name: Android UI read-only check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Download and verify encrypted payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRANSPORT_KEY: ${{ secrets.NBA_RUNTIME_TRANSPORT_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$TRANSPORT_KEY"
+          mkdir -p "$RUNNER_TEMP/nba-payload"
+          gh release download runtime-ui-probe-20261124 --repo rukawaping75-crypto/android-emulator-ci-smoke-20261124 --pattern nba-root-ui-readonly.bin.gpg --dir "$RUNNER_TEMP/nba-payload"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/nba-root-ui-readonly.bin.gpg" | cut -d' ' -f1)" = "5722c3fbb680b388d2b6048c26e1eef040b78ef1407d298e67e1c631d149f07c"
+          printf '%s' "$TRANSPORT_KEY" > "$RUNNER_TEMP/nba-passphrase"
+          chmod 600 "$RUNNER_TEMP/nba-passphrase"
+          gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --decrypt --output "$RUNNER_TEMP/nba-payload/payload.tar" "$RUNNER_TEMP/nba-payload/nba-root-ui-readonly.bin.gpg"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "5d2d24b403bbef7ec24395afeddea317de0f3e4afb40696ec2fd560aa3f55e3f"
+          tar -xf "$RUNNER_TEMP/nba-payload/payload.tar" -C "$RUNNER_TEMP/nba-payload"
+          test -f "$RUNNER_TEMP/nba-payload/nba-root-ui-readonly.sh"
+          echo UI_PAYLOAD_VERIFIED
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Boot emulator and run bounded read-only check
+        env:
+          NBA_TRANSPORT_PASS_FILE: ${{ runner.temp }}/nba-passphrase
+        uses: ReactiveCircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          script: bash "$RUNNER_TEMP/nba-payload/nba-root-ui-readonly.sh"
