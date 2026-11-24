@@ -1,0 +1,19 @@
+name: Draft release transfer probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Read owner-only draft release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/draft-probe"
+          gh release download runtime-probe-20261124 --repo rukawaping75-crypto/android-emulator-ci-smoke-20261124 --pattern draft-probe.txt --dir "$RUNNER_TEMP/draft-probe"
+          test -s "$RUNNER_TEMP/draft-probe/draft-probe.txt"
+          echo DRAFT_ASSET_READ_OK
