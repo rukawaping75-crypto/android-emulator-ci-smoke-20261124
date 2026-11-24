@@ -21,7 +21,7 @@ jobs:
           printf '%s' "$TRANSPORT_KEY" > "$RUNNER_TEMP/nba-passphrase"
           chmod 600 "$RUNNER_TEMP/nba-passphrase"
           gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --decrypt --output "$RUNNER_TEMP/nba-payload/payload.tar" "$RUNNER_TEMP/nba-payload/caller-payload-20261124.bin.gpg"
-          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "5d8b79f7dc67aa2e6ecd1d1dd0bf14871136f380fbbaef36112a6cd275878c0"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "5d8b79f7dc67aa2e6ecd1d1dd0bf14871136f380fbbaaef36112a6cd275878c0"
           tar -xf "$RUNNER_TEMP/nba-payload/payload.tar" -C "$RUNNER_TEMP/nba-payload"
           test -f "$RUNNER_TEMP/nba-payload/probe.sh"
           test -f "$RUNNER_TEMP/nba-payload/caller.sh"
