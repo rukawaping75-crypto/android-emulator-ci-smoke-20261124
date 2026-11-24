@@ -33,6 +33,7 @@ jobs:
       - name: Boot emulator and run bounded read-only check
         env:
           NBA_TRANSPORT_PASS_FILE: ${{ runner.temp }}/nba-passphrase
+          NBA_ACTOR_A_PASSWORD: ${{ secrets.NBA_ACTOR_A_PASSWORD }}
         uses: ReactiveCircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808
         with:
           api-level: 30
@@ -72,3 +73,16 @@ jobs:
             base64 -w 76 "$RUNNER_TEMP/nba-root-ui-readonly/email-next.png.gpg"
             echo UI_EMAIL_NEXT_GPG_BASE64_END
             echo UI_EMAIL_NEXT_CAPTURE_COMPLETE
+            test -n "$NBA_ACTOR_A_PASSWORD"
+            adb shell input tap 350 1110
+            adb shell input text "$NBA_ACTOR_A_PASSWORD"
+            adb shell input keyevent 4
+            adb shell input tap 540 1390
+            sleep 22
+            adb exec-out screencap -p > "$RUNNER_TEMP/nba-root-ui-readonly/actor-a-login.png"
+            test -s "$RUNNER_TEMP/nba-root-ui-readonly/actor-a-login.png"
+            gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --symmetric --cipher-algo AES256 --s2k-digest-algo SHA256 --output "$RUNNER_TEMP/nba-root-ui-readonly/actor-a-login.png.gpg" "$RUNNER_TEMP/nba-root-ui-readonly/actor-a-login.png"
+            echo UI_ACTOR_A_LOGIN_GPG_BASE64_BEGIN
+            base64 -w 76 "$RUNNER_TEMP/nba-root-ui-readonly/actor-a-login.png.gpg"
+            echo UI_ACTOR_A_LOGIN_GPG_BASE64_END
+            echo UI_ACTOR_A_LOGIN_CAPTURE_COMPLETE
