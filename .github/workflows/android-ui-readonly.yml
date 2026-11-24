@@ -86,3 +86,12 @@ jobs:
             base64 -w 76 "$RUNNER_TEMP/nba-root-ui-readonly/actor-a-login.png.gpg"
             echo UI_ACTOR_A_LOGIN_GPG_BASE64_END
             echo UI_ACTOR_A_LOGIN_CAPTURE_COMPLETE
+            adb shell input tap 540 2075
+            sleep 10
+            adb exec-out screencap -p > "$RUNNER_TEMP/nba-root-ui-readonly/after-location-no.png"
+            test -s "$RUNNER_TEMP/nba-root-ui-readonly/after-location-no.png"
+            gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --symmetric --cipher-algo AES256 --s2k-digest-algo SHA256 --output "$RUNNER_TEMP/nba-root-ui-readonly/after-location-no.png.gpg" "$RUNNER_TEMP/nba-root-ui-readonly/after-location-no.png"
+            echo UI_AFTER_LOCATION_NO_GPG_BASE64_BEGIN
+            base64 -w 76 "$RUNNER_TEMP/nba-root-ui-readonly/after-location-no.png.gpg"
+            echo UI_AFTER_LOCATION_NO_GPG_BASE64_END
+            echo UI_AFTER_LOCATION_NO_CAPTURE_COMPLETE
