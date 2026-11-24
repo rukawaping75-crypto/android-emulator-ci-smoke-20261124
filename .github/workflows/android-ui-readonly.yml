@@ -40,7 +40,7 @@ jobs:
           arch: x86_64
           profile: pixel_4
           script: |
-            set -euo pipefail
+            set -eu
             bash "$RUNNER_TEMP/nba-payload/nba-root-ui-readonly.sh"
             adb shell input tap 540 1965
             sleep 25
