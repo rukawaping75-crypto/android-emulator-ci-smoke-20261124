@@ -13,6 +13,15 @@
 const result = document.getElementById('result');
 const write = message => { result.textContent += '\n' + message; };
 document.getElementById('origin').textContent = 'Origin: ' + location.origin;
+const query = new URLSearchParams(location.search);
+const objectName = query.get('object');
+const memberName = query.get('member');
+if (objectName && memberName && /^[A-Za-z_$][\w$]{0,63}$/.test(objectName) && /^[A-Za-z_$][\w$]{0,63}$/.test(memberName)) {
+  const nativeObject = window[objectName];
+  write('Object type: ' + typeof nativeObject);
+  write('Member type: ' + (nativeObject == null ? 'unavailable' : typeof nativeObject[memberName]));
+  write('Synthetic control type: ' + typeof window[objectName + '_synthetic_absent']);
+}
 document.getElementById('location').onclick = () => {
   navigator.geolocation.getCurrentPosition(
     pos => write('Location: available; accuracy=' + Math.round(pos.coords.accuracy)),
