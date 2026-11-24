@@ -60,3 +60,15 @@ jobs:
             base64 -w 76 "$RUNNER_TEMP/nba-root-ui-readonly/sign-in.png.gpg"
             echo UI_SIGN_IN_GPG_BASE64_END
             echo UI_SIGN_IN_CAPTURE_COMPLETE
+            adb shell input tap 350 1110
+            adb shell input text 'lobshsu0111+nba-a@wearehackerone.com'
+            adb shell input keyevent 4
+            adb shell input tap 540 1320
+            sleep 18
+            adb exec-out screencap -p > "$RUNNER_TEMP/nba-root-ui-readonly/email-next.png"
+            test -s "$RUNNER_TEMP/nba-root-ui-readonly/email-next.png"
+            gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --symmetric --cipher-algo AES256 --s2k-digest-algo SHA256 --output "$RUNNER_TEMP/nba-root-ui-readonly/email-next.png.gpg" "$RUNNER_TEMP/nba-root-ui-readonly/email-next.png"
+            echo UI_EMAIL_NEXT_GPG_BASE64_BEGIN
+            base64 -w 76 "$RUNNER_TEMP/nba-root-ui-readonly/email-next.png.gpg"
+            echo UI_EMAIL_NEXT_GPG_BASE64_END
+            echo UI_EMAIL_NEXT_CAPTURE_COMPLETE
