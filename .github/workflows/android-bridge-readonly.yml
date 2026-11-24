@@ -17,11 +17,11 @@ jobs:
           test -n "$TRANSPORT_KEY"
           mkdir -p "$RUNNER_TEMP/nba-payload"
           gh release download runtime-readonly-probe-20261124 --repo rukawaping75-crypto/android-emulator-ci-smoke-20261124 --pattern bridge-probe-20261124.bin.gpg --dir "$RUNNER_TEMP/nba-payload"
-          test "$(sha256sum "$RUNNER_TEMP/nba-payload/bridge-probe-20261124.bin.gpg" | cut -d' ' -f1)" = "79f6f55007986764719ef8b9b92735681f60e13e13207aead413f45320357fb9"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/bridge-probe-20261124.bin.gpg" | cut -d' ' -f1)" = "7cdfa621426d1989c04c5a888a2476754d3d68109e2e13a301d5bb4cfe845f3f"
           printf '%s' "$TRANSPORT_KEY" > "$RUNNER_TEMP/nba-passphrase"
           chmod 600 "$RUNNER_TEMP/nba-passphrase"
           gpg --quiet --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/nba-passphrase" --decrypt --output "$RUNNER_TEMP/nba-payload/payload.tar" "$RUNNER_TEMP/nba-payload/bridge-probe-20261124.bin.gpg"
-          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "62511fb24cf20cbff8c7077af7bd4abf23e72e6ec166f89acc4d39ac1cf59567"
+          test "$(sha256sum "$RUNNER_TEMP/nba-payload/payload.tar" | cut -d' ' -f1)" = "0a63649c4397cccc20fe0b095dc38b0262cab3ee2bcde1709ae01dc127e526dd"
           tar -xf "$RUNNER_TEMP/nba-payload/payload.tar" -C "$RUNNER_TEMP/nba-payload"
           test -f "$RUNNER_TEMP/nba-payload/bridge-probe.sh"
           echo BRIDGE_PAYLOAD_VERIFIED
